@@ -1,14 +1,14 @@
-import MySQLdb as mysql
+# import MySQLdb as mysql
+import pymysql
 import random, re
 
-MYSQLUSER = 'tasks'
-MYSQLDB = 'tasksdb'
-PASSWORD = 'tasks12'
+MYSQLUSER = 'root'
+MYSQLDB = 'bugdb'
+PASSWORD = ''
 
-def connectDB():
 
-    conn = mysql.connect (host = 'localhost', user = MYSQLUSER, passwd = PASSWORD ,db = MYSQLDB)
-    
+def connect_db():
+    conn = pymysql.connect(host='localhost', user=MYSQLUSER, passwd=PASSWORD, db=MYSQLDB)
     return conn
 
 
@@ -18,19 +18,18 @@ def runSql(query, conn):
     result = cursor.fetchall()
     return result
 
-#this loginPage call is just a demo of how to use the above to functions.
+# this loginPage call is just a demo of how to use the above to functions.
+
 
 def logMeIn(conn, email_id,  password):
-    
     username = re.split('@', email_id)[0]
     query = """select password from  users where user_name = '"""+username+"""'
             and password = md5('"""+password+"""');"""
-    result = runSql(query,conn)
+    result = runSql(query, conn)
     
-    if len(result) <> 0:
+    if len(result) > 0:
         return username
-    else:
-        return False
+    return False
 
 
 def loginPage(conn, email_id,  password):
@@ -38,12 +37,13 @@ def loginPage(conn, email_id,  password):
     username = re.split('@', email_id)[0]
     query = """select password from  users where user_name = '"""+username+"""'
             and password = md5('"""+password+"""');"""
-    result = runSql(query,conn)
+    result = runSql(query, conn)
     
-    if len(result) <> 0:
+    if len(result) != 0:
         return True
     else:
         return False
+
 
 # The debug procedures
 
@@ -52,15 +52,17 @@ def m_debug(conn, text):
     result = runSql(query, conn)
     conn.commit()
 
+
 def getDebug(conn):
     query = """select text from m_debug;"""
     result = runSql(query, conn)
     debug_log = [row[0] for row in result]
     return debug_log
 
+
 def flushDebug(conn):
     query = """delete from m_debug;"""
-    result = runSql(query,conn)
+    result = runSql(query, conn)
 
 
 # Now the application procedures.
@@ -72,13 +74,21 @@ def getBugList(conn, user):
     return bugList
 
 
+def create_user(conn, email, password):
+    """
+    This adds a new user from the email_id
+    """
+    username = re.split('@', email)[0]
+    # username = email_id.replace('@iese.edu', '')
+    query = """
+    INSERT INTO users (id, password, username, status)
+    VALUES ('%s', md5('%s'), '%s', 'A');
+    """ % (email, password, username)
 
-def createUser(conn, email_id, password):
-    """ This adds a new user from the email_id """
-    username = re.split('@', email_id)[0]
-    #username = email_id.replace('@iese.edu', '')
-    query = """insert into users (email_id, password, user_name, status) values ('"""+email_id+"""',md5('"""+password+"""'), '"""+username+"""','A')"""
-    result = runSql(query,conn)
+    # TODO: check success
+    result = runSql(query, conn)
+
+    return True
 
     
 def getUser(conn, username):
@@ -88,8 +98,8 @@ def getUser(conn, username):
     
     result = runSql(query, conn)
     
-    if len(result) <> 0:
-        entries = [dict(user_id = row[0], username=row[1], status=row[2], email_id=row[3]) for row in result]
+    if len(result) > 0:
+        entries = [dict(user_id=row[0], username=row[1], status=row[2], email_id=row[3]) for row in result]
         entries = entries[0]
         m_debug(conn, 'Entry found in getUser for the username :'+entries['username'])
     else:
@@ -111,8 +121,6 @@ def getUserID(conn, user_id):
         entries = False
         
     return entries
-
-
 
 
 # for bugs
@@ -189,58 +197,57 @@ def getUsers(conn):
     
     return users
     
+
 def getUserEmails(conn):
-
     query = """select email_id, user_id from users where status = 'A';"""
-    result = runSql(query,conn)
+    result = runSql(query, conn)
 
-    users = [dict(email_id = row[0], user_id = row[1]) for row in result]
+    users = [dict(email_id=row[0], user_id=row[1]) for row in result]
     
     return users
 
 
 def getStatuses(conn):
-
     query = """select status, status_description from all_status order by status;"""
-    result = runSql(query,conn)
-    all_status = [dict(status = row[0], status_description= row[1]) for row in result]
-    
+    result = runSql(query, conn)
+    all_status = [dict(status=row[0], status_description=row[1]) for row in result]
+
     return all_status
+
 
 def addStatus(conn, status, description):
     query = """insert into all_status (status, status_description) values ('"""+status+"""','"""+description+"""');"""
-    result = runSql(query,conn)
+    result = runSql(query, conn)
+
 
 def deleteStatus(conn, status):
     query = """delete from all_status where status = '"""+status+"""';"""
-    runSql(query,conn)
+    runSql(query, conn)
 
     
 def getAllQueues(conn):
-
     all_users = getUsers(conn)
     all_queues = []
-    
     for user in all_users:
         queue = getBugList(conn, user['username'])
-        summary = dict(username = user['username'], queue = queue)
+        summary = dict(username=user['username'], queue=queue)
         all_queues.append(summary)
-
     return all_queues
-
 
 
 def getCategories(conn):
     query = """select c1.category_id, c1.category_name, c1.category_description, c1.parent_category_id, c1.category_owner_id, c2.category_name as parent_Category_name, c2.category_description as parent_category_description, u.user_name, u.email_id from categories c1, categories c2, users u where c1.parent_category_id = c2.category_id and c1.category_owner_id = u.user_id"""
 
-    result = runSql(query,conn)
-    cats = [dict(category_id = row[0], category_name = row[1], category_description = row[2], parent_category_id = row[3], category_owner_id = row[4], parent_category_name = row[5], parent_category_description = row[6], owner_username = row[7], owner_email_id = row[8]) for row in result]
+    result = runSql(query, conn)
+    cats = [dict(category_id=row[0], category_name=row[1], category_description = row[2], parent_category_id = row[3], category_owner_id = row[4], parent_category_name = row[5], parent_category_description = row[6], owner_username = row[7], owner_email_id = row[8]) for row in result]
 
     return cats
 
 
-
 def createCategory(conn, cat):
-    query = """insert into categories (category_name, category_description, category_owner_id, parent_category_id) values (cat['category_name'],cat['category_description'],cat['category_owner_id'],cat['parent_category_id'])"""
+    query = """
+    INSERT INTO `categories` (`category_name`, `category_description`, `category_owner_id`, `parent_category_id`)
+    VALUES ('%(category_name)s', '%(category_description)s', '%(category_owner_id)', '%(parent_category_id)s');
+    """ % cat
 
     result = runSql(conn, query)

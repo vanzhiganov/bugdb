@@ -1,55 +1,38 @@
-#all imports
+# coding: utf-8
 
-from flask import Flask, request, session, g, redirect, url_for, abort, render_template, flash, url_for
-#import textile
+# all imports
 
-#import os
-#from werkzeug import secure_filename
-
-
-
-#our own modules from this project
-
+from flask import Flask, request, session, g, redirect, render_template, url_for
+# from flask import flash, abort
+# from flask_peewee.db import Database
 import db
+# from app.bugdb import models
 import emails
 
-# configuration
-
-DEBUG = True
-SECRET_KEY = 'i\xa5\xdb\x00\x031o\x88)\x9dMW<\xceq\x0c\xb6\xff5\xcdO%\xcch'
-
-DEV = "Development"
-PROD = "Production"
-
-ENVIR = DEV
-
-
-# thats it, now lets do 
-
-# create our little application :)
 app = Flask(__name__)
-app.config.from_object(__name__)
+app.config.from_pyfile('config.py')
 
 
 @app.before_request
 def before_request():
-    g.db = db.connectDB()
-    
+    g.db = db.connect_db()
+
+
 @app.after_request
 def after_request(response):
     g.db.commit()
     g.db.close()
     return response
 
-
 # Now the application procedures.
 
 
-@app.route('/', methods=['GET','POST'])
+@app.route('/', methods=['GET', 'POST'])
 def index():
     if 'username' in session:
         return redirect(url_for('queue'))
     return render_template('index.html')
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -57,9 +40,9 @@ def login():
         email_id = request.form['email_id']
         password = request.form['password']
         
-        debug('Before trying to login with email_id '+email_id)
+        debug('Before trying to login with email_id %s' % email_id)
 
-        username = db.logMeIn(g.db,email_id,password)
+        username = db.logMeIn(g.db, email_id, password)
         
         if username:
             debug('Login successful for email_id : '+email_id)
@@ -71,15 +54,15 @@ def login():
                 debug('user found and session populated with : '+user['username'])
             else:
                 error = "User population failed"
-                return redirect(url_for('login', error = error))
+                return redirect(url_for('login', error=error))
                 
             return redirect(url_for('queue'))
         else:
-
             error = 'Login failed. Try again'
-            return render_template('login.html',error = error)
+            return render_template('login.html', error=error)
     else:
         return render_template('login.html')
+
 
 @app.route('/logout')
 def logout():
@@ -89,23 +72,23 @@ def logout():
     return redirect(url_for('index'))
 
 
-@app.route('/register',methods=['GET','POST'])
+@app.route('/register', methods=['GET', 'POST'])
 def register():
+    if request.method == 'POST':
+        debug('Registering new User: %s' % request.form['email_id'])
 
-    if request.method <> 'POST':
-        return render_template('register.html')
-    else:
-        debug('Registering new User : '+request.form['email_id'])
         users_email = db.getUserEmails(g.db)
         if request.form['email_id'] not in [(row['email_id']) for row in users_email]:
-            db.createUser(g.db, request.form['email_id'], request.form['password'])
+            db.create_user(g.db, request.form['email_id'], request.form['password'])
         return redirect(url_for('login'))
+    return render_template('register.html')
 
-@app.route('/queue', methods=['GET','POST'])
+
+@app.route('/queue', methods=['GET', 'POST'])
 def queue():
     if 'username' in session:
         users = db.getUsers(g.db)
-        if request.method <> 'POST':
+        if request.method != 'POST':
             debug('Getting bugList for user : '+session['username'])
             bugList = db.getBugList(g.db, session['username'])
             return render_template('queue.html', bugs = bugList, other_username = session['username'], users= users, queue_user = session['username'])
@@ -117,15 +100,14 @@ def queue():
                 return render_template('queue.html', bugs = bugList, other_username = request.form['other_username'], users = users, queue_user = request.form['other_username'])
             else:
                 debug('Getting all queues')
-                #get a visible drop down of all users.
-                #avallark working from here...
-                #create an list of list of users
+                # get a visible drop down of all users.
+                # avallark working from here...
+                # create an list of list of users
                 all_queues = db.getAllQueues(g.db)
                 return render_template('all_queues.html', all_queues = all_queues, users=users, other_username = "All")
     else:
         return render_template('login.html', error = 'Login first')
 
-        
 
 @app.route('/addBug', methods=['GET', 'POST'])
 def addBug():
@@ -153,6 +135,7 @@ def addBug():
     else:
         return render_template('login.html', error = 'Login first')
 
+
 @app.route('/bug', methods=['GET', 'POST'])
 def bug():
     bug_id = request.args.get('bug_id', '')
@@ -172,17 +155,26 @@ def bug():
         assigned_to_user_id = db.getUser(g.db, request.form['assigned_to_username'])['user_id']
         updating_user_id = db.getUser(g.db, session['username'])['user_id']
         
-        bug = dict(title = request.form['title'], customer=request.form['customer'], updated_by_username = session['username'], assigned_to_user_id = assigned_to_user_id ,assigned_to_username = request.form['assigned_to_username'], description = request.form['description'], priority = request.form['priority'], status = request.form['status'], updating_user_id = updating_user_id, bug_id = bug_id)
-
+        bug = dict(
+                title=request.form['title'],
+                customer=request.form['customer'],
+                updated_by_username=session['username'],
+                assigned_to_user_id=assigned_to_user_id,
+                assigned_to_username=request.form['assigned_to_username'],
+                description=request.form['description'],
+                priority=request.form['priority'],
+                status=request.form['status'],
+                updating_user_id=updating_user_id,
+                bug_id=bug_id
+        )
 
         # creating list of header updates onto the body
         debug(str(bug_id))
         bugh = db.getBugHeader(g.db, bug_id)
     
         changedString = ""
-        
-        
-        if bugh['title'] <> bug['title']:
+
+        if bugh['title'] != bug['title']:
             changedString += "** Changed Title from "+bugh['title']+" to "+ bug['title'] + "\n"
 
         #if bugh['description'] <> bug['description']:
@@ -225,13 +217,14 @@ def bug():
 def options():
     return render_template('options.html')
 
+
 @app.route('/categories')
 def categories():
     return render_template('categories.html')
 
-@app.route('/status',methods = ['GET','POST'])
+
+@app.route('/status', methods=['GET', 'POST'])
 def status():
-    
     if request.method <> 'POST':
         status = db.getStatuses(g.db)
         return render_template('status.html', status = status)
@@ -240,7 +233,8 @@ def status():
         db.addStatus(g.db, request.form['status'], request.form['description'])
         status = db.getStatuses(g.db)
         return render_template('status.html', status = status)
-        
+
+
 @app.route('/deleteStatus')
 def deleteStatus():
     status = request.args.get('status', '')
@@ -250,12 +244,16 @@ def deleteStatus():
     return redirect(url_for('status'))
 
 
-#Usual debug procedures
+# Usual debug procedures
         
 def debug(t):
-    """The procedure logs all comments if the DEBUG configuration variable is set to True"""
-    if DEBUG == True:
+    """
+    The procedure logs all comments if the DEBUG configuration variable is set to True
+    """
+    print app.config
+    if app.config['DEBUG']:
         db.m_debug(g.db, t)
+
 
 @app.route('/add')
 def add():
@@ -268,21 +266,18 @@ def debugs():
     debug_log = db.getDebug(g.db)
     return render_template('debug.html', debug = debug_log)
 
+
 @app.route('/flushDebug')
 def flushDebug():
     debug('Entering Flush Debug')
     db.flushDebug(g.db)
     return redirect(url_for('debugs'))
 
-
-
 # and finally lets start the program.
-
         
 if __name__ == '__main__':
-    if ENVIR <> DEV:
-        app.run(host='0.0.0.0', port=4000)
-    else:
-        #DEBUG = False
-        app.run(port=4000)
-
+#    if app.config.ENVIR != app.config.DEV:
+#        app.run(host='0.0.0.0', port=4000)
+#    else:
+        # DEBUG = False
+    app.run(port=4000)
