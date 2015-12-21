@@ -37,15 +37,15 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email_id = request.form['email_id']
+        email = request.form['email']
         password = request.form['password']
         
-        debug('Before trying to login with email_id %s' % email_id)
+        debug('Before trying to login with email_id %s' % email)
 
-        username = db.logMeIn(g.db, email_id, password)
+        username = db.logMeIn(g.db, email, password)
         
         if username:
-            debug('Login successful for email_id : '+email_id)
+            debug('Login successful for email_id : '+email)
             
             user = db.getUser(g.db, username)
             
@@ -75,11 +75,11 @@ def logout():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        debug('Registering new User: %s' % request.form['email_id'])
+        debug('Registering new User: %s' % request.form['email'])
 
         users_email = db.getUserEmails(g.db)
-        if request.form['email_id'] not in [(row['email_id']) for row in users_email]:
-            db.create_user(g.db, request.form['email_id'], request.form['password'])
+        if request.form['email'] not in [(row['email']) for row in users_email]:
+            db.create_user(g.db, request.form['email'], request.form['password'])
         return redirect(url_for('login'))
     return render_template('register.html')
 
@@ -91,7 +91,7 @@ def queue():
         if request.method != 'POST':
             debug('Getting bugList for user : '+session['username'])
             bugList = db.getBugList(g.db, session['username'])
-            return render_template('queue.html', bugs = bugList, other_username = session['username'], users= users, queue_user = session['username'])
+            return render_template('queue.html', bugs=bugList, other_username=session['username'], users= users, queue_user = session['username'])
         else:
             
             if request.form['other_username'] <> 'all':
@@ -250,7 +250,6 @@ def debug(t):
     """
     The procedure logs all comments if the DEBUG configuration variable is set to True
     """
-    print app.config
     if app.config['DEBUG']:
         db.m_debug(g.db, t)
 
@@ -264,7 +263,7 @@ def add():
 @app.route('/debugs')
 def debugs():
     debug_log = db.getDebug(g.db)
-    return render_template('debug.html', debug = debug_log)
+    return render_template('debug.html', debug=debug_log)
 
 
 @app.route('/flushDebug')

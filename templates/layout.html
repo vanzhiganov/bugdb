@@ -1,37 +1,35 @@
 <!doctype html>
-<title>Bug Database</title>
-<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
-<link rel=stylesheet type=text/css href="{{ url_for('static', filename='buttonStyle.css') }}">
-<!-- Ignoring javascripts until we need them.
-<script type="text/javascript" src="{{ url_for('static', filename='fbutils.js') }}"></script>  
+<head>
+    <title>BugDB</title>
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='buttonStyle.css') }}">
+    <!-- Ignoring javascripts until we need them.
+    <script type="text/javascript" src="{{ url_for('static', filename='fbutils.js') }}"></script>
 
-<script type="text/javascript" src="{{ url_for('static', filename='utils.js') }}"></script>  
-<script type="text/javascript" src="{{ url_for('static', filename='clear-default-text.js') }}"></script>  
--->
-  <div class ="heading">
-    <h1><a href="{{url_for('index')}}">Bug Database</a></h1>
-  </div>
-  {% for message in get_flashed_messages() %}
-    <div class=flash>{{ message }}</div>
-  {% endfor %}
-
-<div class="top-right">
-  {% if not session.username %}
-  <a href="{{url_for('register') }}"> Register</a>&nbsp;<a href="{{ url_for('login') }}">Login</a>
-  {% else %}
-  <a href="{{ url_for('options') }}">Options</a>
-  <a href="{{ url_for('logout') }}">Logout</a>
-  {% endif %}
-</div>
-
-<div class=bodyblock>
-  {% block body %}{% endblock %}
-</div>
- 
-
-
-<div class=footer>
-
-      <p class=footer>Copyright : Bijur Vallarkodath. Released under GPL v3</p>
-
-</div>
+    <script type="text/javascript" src="{{ url_for('static', filename='utils.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='clear-default-text.js') }}"></script>
+    -->
+</head>
+<body>
+    <div class ="heading">
+        <h1><a href="{{url_for('index')}}">BugDB</a></h1>
+    </div>
+    {% for message in get_flashed_messages() %}
+        <div class=flash>{{ message }}</div>
+    {% endfor %}
+    <div class="top-right">
+        {% if not session.username %}
+        <a href="{{url_for('register') }}"> Register</a>&nbsp;<a href="{{ url_for('login') }}">Login</a>
+        {% else %}
+        <a href="{{ url_for('options') }}">Options</a>
+        <a href="{{ url_for('logout') }}">Logout</a>
+        {% endif %}
+    </div>
+    <div class=bodyblock>
+        {% block body %}{% endblock %}
+    </div>
+    <div class=footer>
+        <p class=footer>BugDB. Released under GPLv3</p>
+    </div>
+</body>
+</html>

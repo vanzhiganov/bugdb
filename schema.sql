@@ -6,11 +6,26 @@ create table users (
     password char(60) not null, 
     username char(50),
     status char(1) default 'A',
-    PRIMARY KEY (user_id) 
+    PRIMARY KEY (id)
 );
 
 -- Legend Status : A - Active , I - Inactive
 -- password : currently set to iese1234 by default.
+
+
+drop table if exists projects;
+
+create table projects (
+    id INTEGER NOT NULL AUTO_INCREMENT,
+    user_id INTEGER not null,
+    name char(64) not null,
+    description char(256),
+    access char(12) default 'private',
+    PRIMARY KEY (id)
+);
+
+-- access: public, private
+
 
 drop table if exists m_debug;
 

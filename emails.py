@@ -1,10 +1,10 @@
 import smtplib
-import string, sys
-
+import string
+import sys
 import db
 
-HOST = "localhost"
 
+HOST = "localhost"
 FROM = "bugdb@iesedev.org"
 
 
@@ -18,8 +18,6 @@ def emailUser(subject, body_text, toList):
         server.quit()
 
 
-
-
 def bugAssignNotify(bugh, to):
 
     subject = '[Sev '+str(bugh['priority'])+'] '+'Bug '+str(bugh['bug_id'])+' has been assigned to you'
@@ -31,5 +29,3 @@ def bugAssignNotify(bugh, to):
         +"""\n """
 
     emailUser(subject, body_text, [to])
-    
-    

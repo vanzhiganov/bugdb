@@ -2,11 +2,9 @@
 {% block body %}
 <h3>These are your debug messages</h3>
 <ul>
-
-  {% for d in debug %}
-  <li>{{ d }} </li>
-  {% endfor %}
- 
+    {% for d in debug %}
+    <li>{{ d }} </li>
+    {% endfor %}
 </ul>
 <a href="flushDebug" class="button button-gray" >Flush Debug</a>
 <a href="add" class="button button-gray" >Who am I?</a>
