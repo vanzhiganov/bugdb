@@ -1,10 +1,10 @@
 drop table if exists users;
 
 create table users (
-    user_id INTEGER NOT NULL AUTO_INCREMENT, 
-    email_id char(100) not null,  
+    id INTEGER NOT NULL AUTO_INCREMENT,
+    email char(100) not null,
     password char(60) not null, 
-    user_name char(50),     
+    username char(50),
     status char(1) default 'A',
     PRIMARY KEY (user_id) 
 );
