@@ -8,13 +8,13 @@
 
     <!-- <input type=text size=30 name=other_username value="{{ other_username }}"> -->
 
-    <select name="other_username">
+    <select name="other_user_id">
       <option value = "all"> All </option>
       {% for i in users %}
-        {% if i['username'] == session['username'] %}
-            <option value="{{i['username']}}" selected='selected' >{{i['username']}}</option>
+        {% if i.username == session['username'] %}
+            <option value="{{ i.id }}" selected='selected' >{{ i.username }} ({{ i.email }})</option>
         {% else %}
-            <option value="{{i['username']}}" >{{i['username']}}</option>
+            <option value="{{ i.id }}" >{{i.username }} ({{ i.email }})</option>
         {% endif %}
       {% endfor %}
 
@@ -41,10 +41,10 @@
     {% for d in bugs %}
 
     <tr>
-      <td> {{ d['customer'] }} </td>
-      <td> <a href="{{url_for('bug')}}?bug_id={{ d['bug_id'] }}"> {{ d['title'] }} </a></td>
-      <td> {{ d['priority'] }} </td>
-      <td> {{ d['status'] }} </td> 
+      <td>{{ d['customer'] }} </td>
+      <td><a href="{{url_for('bug')}}?bug_id={{ d.id }}"> {{ d['title'] }}</a></td>
+      <td>{{ d['priority'] }}</td>
+      <td>{{ d['status'] }}</td>
     </tr>
 
 
