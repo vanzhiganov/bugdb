@@ -152,7 +152,8 @@ def createBug2(conn, bug):
 
 def getBugHeader(conn, bug_id):
     query = """
-    SELECT b.bug_id, b.bug_title, b.bug_description, b.assigned_to_user_id, b.customer, b.status, u.username, b.priority
+    SELECT b.bug_id, b.bug_title, b.bug_description, b.assigned_to_user_id, b.customer,
+    b.status, u.username, b.priority
     FROM bug_header b, users u
     WHERE b.assigned_to_user_id = u.id AND bug_id = %s;
     """ % bug_id

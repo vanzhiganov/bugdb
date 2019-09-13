@@ -257,37 +257,46 @@ def bug():
         return render_template('bug.html', bugh=bugh, bugb=bugb, all_status=all_status, all_users=all_users)
 
     else:
+        print(request.form)
         debug('Creating dictionary of bug to update the header for ' + str(bug_id))
 
-        assigned_to_user_id = db.getUser(g.db, request.form['assigned_to_username'])['user_id']
-        updating_user_id = db.getUser(g.db, session['username'])['user_id']
+        updated_by_user_id = request.form['updated_by_user_id']
+        assigned_to_user_id = db.database.session.query(UsersModel.id).filter_by(id=updated_by_user_id).scalar()
+        updating_user_id = db.database.session.query(UsersModel.id).filter_by(id=session['id']).scalar()
 
         bug = dict(
             title=request.form['title'],
             customer=request.form['customer'],
             updated_by_username=session['username'],
             assigned_to_user_id=assigned_to_user_id,
-            assigned_to_username=request.form['assigned_to_username'],
+            assigned_to_username=request.form['assigned_to_user'],
             description=request.form['description'],
             priority=request.form['priority'],
-            status=request.form['status'],
+            status=request.form.get('status', 'OPEN'),
             updating_user_id=updating_user_id,
             bug_id=bug_id
         )
 
         # creating list of header updates onto the body
         debug(str(bug_id))
-        bugh = db.getBugHeader(g.db, bug_id)
+
+        bugh = db.database.session.query(
+            BugHeaderModel
+        ).filter(
+            BugHeaderModel.id == bug_id
+        ).first()
 
         changedString = ""
 
-        if bugh['title'] != bug['title']:
+        if bugh.title != bug['title']:
             changedString += "** Changed Title from " + bugh['title'] + " to " + bug['title'] + "\n"
+
+            bugh.title = bug['title']
 
         # if bugh['description'] <> bug['description']:
         #    changedString += "** Changed Description from "+bugh['description']+" to "+ bug['description'] + "\n"
 
-        if bugh['assigned_to_user_id'] != bug['assigned_to_user_id']:
+        if bugh.assigned_to_user_id != int(bug['assigned_to_user_id']):
             to = db.getUserEmail(g.db, bug['assigned_to_user_id'])
             debug('Sending email to notify assignation to : ' + to)
             changedString += "** Changed Assigned from " + bugh['assigned_to_username'] + " to " + request.form[
@@ -295,26 +304,36 @@ def bug():
             debug(changedString)
             emails.bugAssignNotify(bug, to)
 
-        if bugh['description'] != bug['description']:
-            changedString += "** Changed Bug Description from " + "\n" + bugh['description']
+            bugh.assigned_to_user_id = bug['assigned_to_user_id']
 
-        if bugh['customer'] != bug['customer']:
+        if bugh.description != bug['description']:
+            changedString += "** Changed Bug Description from " + "\n" + bugh.description
+            bugh.description = bug['description']
+
+        if bugh.customer != bug['customer']:
             changedString += "** Changed Customer from " + bugh['customer'] + " to " + bug['customer'] + "\n"
+            bugh.customer = bug['customer']
 
-        if bugh['status'] != bug['status']:
+        if bugh.status != bug['status']:
             changedString += "** Changed Status from " + bugh['status'] + " to " + bug['status'] + "\n"
 
-        if str(bugh['priority']) != str(bug['priority']):
+        if str(bugh.priority) != str(bug['priority']):
             changedString += "** Changed Priority from " + str(bugh['priority']) + " to " + str(bug['priority']) + "\n"
+            bugh.priority = int(bug['priority'])
 
         debug(changedString)
         # Now updating the header with changes
-        db.updateBugHeader(g.db, bug)
+        # db.updateBugHeader(g.db, bug)
 
-        newUpdate = changedString + "\n" + request.form['newupdate']
-        bugUpdate = dict(update=newUpdate, updated_by_user_id=updating_user_id, bug_id=bug_id)
 
-        db.insertBugUpdate(g.db, bugUpdate)
+        bb = BugBodyModel()
+        bb.bug_update = changedString + "\n" + request.form['newupdate']
+        bb.updated_by = updating_user_id
+        bb.bug_id = bug_id
+
+        db.database.session.add(bb)
+        db.database.session.commit()
+        db.database.session.flush()
 
         return redirect(url_for('queue'))
 

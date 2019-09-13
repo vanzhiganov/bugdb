@@ -23,12 +23,12 @@
     <tr>
       
       <td>Assigned to</td><td> 
-        <select name="assigned_to_username" >
+        <select name="assigned_to_user" >
           {% for i in all_users %}
-            {% if bugh['assigned_to_username'] == i['username'] %}
-            <option value="{{ i['username'] }}" selected='selected'> {{ i['username'] }} </option>
+            {% if bugh['assigned_to_user_id'] == i['id'] %}
+            <option value="{{ i['username'] }}" selected='selected'> {{ i['username'] }} ({{ i['email'] }})</option>
             {% else %}
-            <option value="{{ i['username'] }}" > {{ i['username'] }} </option> 
+            <option value="{{ i['username'] }}" > {{ i['username'] }} ({{ i['email'] }})</option>
             {% endif %}
           {% endfor %}
       </select></td>
@@ -86,7 +86,7 @@
   {% endfor %}
 <table>
   <tr>
-    <td><input type=hidden name="updated_by_username" value = "{{ session['username'] }}"></td>
+    <td><input type=hidden name="updated_by_user_id" value="{{ session['id'] }}"></td>
   </tr>
   <tr>
     <td><textarea name=newupdate rows=7 cols=80></textarea></td>
