@@ -247,7 +247,21 @@ def getAllQueues(conn):
 
 
 def getCategories(conn):
-    query = """select c1.category_id, c1.category_name, c1.category_description, c1.parent_category_id, c1.category_owner_id, c2.category_name as parent_Category_name, c2.category_description as parent_category_description, u.user_name, u.email_id from categories c1, categories c2, users u where c1.parent_category_id = c2.category_id and c1.category_owner_id = u.user_id"""
+    query = """select 
+        c1.category_id,
+        c1.category_name,
+        c1.category_description,
+        c1.parent_category_id,
+        c1.category_owner_id,
+        c2.category_name as parent_Category_name,
+        c2.category_description as parent_category_description,
+        u.user_name,
+        u.email_id
+    from
+        categories c1, categories c2, users u
+    where
+        c1.parent_category_id = c2.category_id and c1.category_owner_id = u.user_id
+    """
 
     result = runSql(query, conn)
     cats = [dict(category_id=row[0], category_name=row[1], category_description = row[2], parent_category_id = row[3], category_owner_id = row[4], parent_category_name = row[5], parent_category_description = row[6], owner_username = row[7], owner_email_id = row[8]) for row in result]
@@ -255,10 +269,10 @@ def getCategories(conn):
     return cats
 
 
-def createCategory(conn, cat):
-    query = """
-    INSERT INTO `categories` (`category_name`, `category_description`, `category_owner_id`, `parent_category_id`)
-    VALUES ('%(category_name)s', '%(category_description)s', '%(category_owner_id)', '%(parent_category_id)s');
-    """ % cat
-
-    result = runSql(conn, query)
+# def createCategory(conn, cat):
+#     query = """
+#     INSERT INTO `categories` (`category_name`, `category_description`, `category_owner_id`, `parent_category_id`)
+#     VALUES ('%(category_name)s', '%(category_description)s', '%(category_owner_id)', '%(parent_category_id)s');
+#     """ % cat
+#
+#     result = runSql(conn, query)

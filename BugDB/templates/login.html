@@ -1,23 +1,25 @@
 {% extends "layout.html" %}
+
 {% block body %}
-<div class=errorMessages>
-    <p>{{ error }}</p>
-</div>
-<h3>Login Here</h3>
-<form name="loginform" method=POST>
-    <table>
-        <tr>
-            <td>Email</td>
-            <td><input type=text name=email /></td>
-        </tr>
-        <tr>
-            <td>Password</td>
-            <td><input type=password name=password /></td>
-        </tr>
-        <tr>
-            <td>&nbsp;</td>
-            <td><input type=submit></td>
-        </tr>
-    </table>
-</form>
+    <div class="row">
+        <div class="col">
+            <h3>Login Here</h3>
+            <form name="loginform" method="POST">
+                <table>
+                    <tr>
+                        <td>Email</td>
+                        <td><input type="text" name="email" class="form-control" /></td>
+                    </tr>
+                    <tr>
+                        <td>Password</td>
+                        <td><input type=password name=password class="form-control" /></td>
+                    </tr>
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td><input type="submit" class="btn btn-success"></td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+    </div>
 {% endblock %}

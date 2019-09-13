@@ -55,11 +55,11 @@ class UsersModel(database.Model):
 #     description = Column(String(256))
 #     # public, private
 #     access = Column(String(12), default="private")
-#
-#
-# class MDebugModel():
-#     __tablename__ = "m_debug"
-#     text = Column(Text)
+
+
+class MDebugModel():
+    __tablename__ = "m_debug"
+    text = Column(Text)
 
 
 class BugHeaderModel(database.Model):
@@ -90,14 +90,23 @@ class StatusesModel(database.Model):
     id = Column(Integer, primary_key=True)
     status = Column(String(256))
     description = Column(Text)
-#
-#
-# # categories
-# class CategoriesModel():
-#     __tablename__ = "categories"
-#
-#     id = Column(Integer, primary_key=True)
-#     name = Column(String(64), nullable=False)
-#     description = Column(String(256))
-#     parent_id = Column(Integer)
-#     owner_id = Column(Integer)
+
+
+class CategoriesModel(database.Model):
+    __tablename__ = "categories"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(64), nullable=False)
+    description = Column(String(256))
+    parent_id = Column(Integer)
+    owner_id = Column(ForeignKey(UsersModel.id), nullable=True)
+
+    def __init__(self, name, description, parent_id, owner_id):
+        self.name = name
+        self.description = description
+        self.parent_id = parent_id
+        self.owner_id = owner_id
+
+    @classmethod
+    def get_all(cls):
+        return database.session.query(cls).all()

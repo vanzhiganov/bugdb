@@ -1,61 +1,46 @@
 {% extends "layout.html" %}
 {% block body %}
-<h3>Bug Queue</h3>
+    <h3>Bug Queue</h3>
 
-<div class=selectUser>
+    <div class=selectUser>
+        <form name=selectUser method=POST>
+            <!-- <input type=text size=30 name=other_username value="{{ other_username }}"> -->
 
-  <form name=selectUser method=POST>
+            <select name="other_user_id">
+                <option value = "all"> All </option>
+                {% for i in users %}
+                    {% if i.username == session['username'] %}
+                        <option value="{{ i.id }}" selected='selected' >{{ i.username }} ({{ i.email }})</option>
+                    {% else %}
+                        <option value="{{ i.id }}" >{{i.username }} ({{ i.email }})</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+            <input type=submit value="See Queue">
+        </form>
+    </div>
+    <div class=bugQueue>
+        <h4>Bug queue for {{ queue_user }} </h4>
+        <table class=bugQueue>
+            <tr>
+                <th>Customer</th>
+                <th> Title </th>
+                <th> Priority </th>
+                <th> Status </th>
+            </tr>
+            {% for d in bugs %}
+                <tr>
+                    <td>{{ d['customer'] }} </td>
+                    <td><a href="{{url_for('bug')}}?bug_id={{ d.id }}"> {{ d['title'] }}</a></td>
+                    <td>{{ d['priority'] }}</td>
+                    <td>{{ d['status'] }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
 
-    <!-- <input type=text size=30 name=other_username value="{{ other_username }}"> -->
-
-    <select name="other_user_id">
-      <option value = "all"> All </option>
-      {% for i in users %}
-        {% if i.username == session['username'] %}
-            <option value="{{ i.id }}" selected='selected' >{{ i.username }} ({{ i.email }})</option>
-        {% else %}
-            <option value="{{ i.id }}" >{{i.username }} ({{ i.email }})</option>
-        {% endif %}
-      {% endfor %}
-
-
-    </select>
-    <input type=submit value="See Queue">
-
-  </form>
-
-</div>
-
-<div class=bugQueue>
-
- <h4>Bug queue for {{ queue_user }} </h4>
-
-  <table class=bugQueue>
-    <tr>
-      <th> Customer </th>
-      <th> Title </th>
-      <th> Priority </th>
-      <th> Status </th>
-    </tr>
-
-    {% for d in bugs %}
-
-    <tr>
-      <td>{{ d['customer'] }} </td>
-      <td><a href="{{url_for('bug')}}?bug_id={{ d.id }}"> {{ d['title'] }}</a></td>
-      <td>{{ d['priority'] }}</td>
-      <td>{{ d['status'] }}</td>
-    </tr>
-
-
-    {% endfor %}
-
-  </table>
-</div>
-
-<div class=options>
-  <a href="addBug" class="button button-gray">Create New Bug</a>
-  <a href="queue" class="button button-gray">Refresh Queue</a>
-</div>
+    <div class=options>
+        <a href="addBug" class="button button-gray">Create New Bug</a>
+        <a href="queue" class="button button-gray">Refresh Queue</a>
+    </div>
 {% endblock %}
-

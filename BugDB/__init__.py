@@ -1,5 +1,5 @@
 """BugDB 2019"""
-from flask import Flask, request, session, g, redirect, render_template, url_for
+from flask import Flask, request, session, g, redirect, render_template, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import alias
 from flask_migrate import Migrate
@@ -70,8 +70,8 @@ def login():
 
             return redirect(url_for('queue'))
         else:
-            error = 'Login failed. Try again'
-            return render_template('login.html', error=error)
+            flash('Login failed. Try again', 'warning')
+            return render_template('login.html')
     else:
         return render_template('login.html')
 
@@ -283,16 +283,12 @@ def bug():
         # creating list of header updates onto the body
         debug(str(bug_id))
 
-        bugh = db.database.session.query(
-            BugHeaderModel
-        ).filter(
-            BugHeaderModel.id == bug_id
-        ).first()
+        bugh = db.database.session.query(BugHeaderModel).filter_by(id=bug_id).first()
 
         changedString = ""
 
         if bugh.title != bug['title']:
-            changedString += "** Changed Title from " + bugh['title'] + " to " + bug['title'] + "\n"
+            changedString += "** Changed Title from " + bugh.title + " to " + bug['title'] + "\n"
 
             bugh.title = bug['title']
 
@@ -302,7 +298,7 @@ def bug():
         if bugh.assigned_to_user_id != int(bug['assigned_to_user_id']):
             to = db.getUserEmail(g.db, bug['assigned_to_user_id'])
             debug('Sending email to notify assignation to : ' + to)
-            changedString += "** Changed Assigned from " + bugh['assigned_to_username'] + " to " + request.form[
+            changedString += "** Changed Assigned from " + bugh.assigned_to_user_id + " to " + request.form[
                 'assigned_to_username'] + "\n"
             debug(changedString)
             emails.bugAssignNotify(bug, to)
@@ -310,18 +306,18 @@ def bug():
             bugh.assigned_to_user_id = bug['assigned_to_user_id']
 
         if bugh.description != bug['description']:
-            changedString += "** Changed Bug Description from " + "\n" + bugh.description
+            changedString += "** Changed Bug Description from " + "\n" + bugh.description + " to " + bug['description'] + "\n"
             bugh.description = bug['description']
 
         if bugh.customer != bug['customer']:
-            changedString += "** Changed Customer from " + bugh['customer'] + " to " + bug['customer'] + "\n"
+            changedString += "** Changed Customer from " + bugh.customer + " to " + bug['customer'] + "\n"
             bugh.customer = bug['customer']
 
         if bugh.status != bug['status']:
-            changedString += "** Changed Status from " + bugh['status'] + " to " + bug['status'] + "\n"
+            changedString += "** Changed Status from " + bugh.status + " to " + bug['status'] + "\n"
 
         if str(bugh.priority) != str(bug['priority']):
-            changedString += "** Changed Priority from " + str(bugh['priority']) + " to " + str(bug['priority']) + "\n"
+            changedString += "** Changed Priority from " + str(bugh.priority) + " to " + str(bug['priority']) + "\n"
             bugh.priority = int(bug['priority'])
 
         debug(changedString)
@@ -354,22 +350,24 @@ def categories():
 
 @app.route('/status', methods=['GET', 'POST'])
 def status():
-    if request.method != 'POST':
-        status = db.getStatuses(g.db)
-        return render_template('status.html', status=status)
-    else:
+    if request.method == 'POST':
         debug('Adding the status : ' + request.form['status'])
-        db.addStatus(g.db, request.form['status'], request.form['description'])
-        status = db.getStatuses(g.db)
-        return render_template('status.html', status=status)
+        s = StatusesModel()
+        s.status = request.form['status']
+        s.description = request.form['description']
+
+        db.database.session.add(s)
+        db.database.session.commit()
+        db.database.session.flush()
+
+    status = db.database.session.query(StatusesModel).all()
+    return render_template('status.html', status=status)
 
 
 @app.route('/deleteStatus')
 def deleteStatus():
     status = request.args.get('status', '')
-    description = request.args.get('description', '')
-
-    db.deleteStatus(g.db, status)
+    StatusesModel.query.filter_by(status=status).delete()
     return redirect(url_for('status'))
 
 
