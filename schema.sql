@@ -82,7 +82,7 @@ create table categories(
    category_id integer not null auto_increment,
    category_name char(15) not null,
    category_description char(50),
-   parent_Category_id integer,
+   parent_category_id integer,
    category_owner_id integer,
    primary key (category_id)
 );

@@ -1,6 +1,9 @@
-# import MySQLdb as mysql
+from flask_sqlalchemy import SQLAlchemy
 import pymysql
 import random, re
+
+
+database = SQLAlchemy()
 
 MYSQLUSER = 'root'
 MYSQLDB = 'bugdb'
@@ -21,16 +24,16 @@ def runSql(query, conn):
 # this loginPage call is just a demo of how to use the above to functions.
 
 
-def logMeIn(conn, email,  password):
-    username = re.split('@', email)[0]
-    query = """
-    SELECT password FROM users WHERE username='%s' AND password = md5('%s');
-    """ % (username, password)
-    result = runSql(query, conn)
-    
-    if len(result) > 0:
-        return username
-    return False
+# def logMeIn(conn, email,  password):
+#     username = re.split('@', email)[0]
+#     query = """
+#     SELECT password FROM users WHERE username='%s' AND password = md5('%s');
+#     """ % (username, password)
+#     result = runSql(query, conn)
+#
+#     if len(result) > 0:
+#         return username
+#     return False
 
 
 def loginPage(conn, email,  password):
@@ -122,7 +125,7 @@ def getUserID(conn, user_id):
     
     result = runSql(query, conn)
     
-    if len(result) <> 0:
+    if len(result) > 0:
         entries = [dict(user_id = row[0], user_first_name=row[1], user_last_name=row[2], email_id=row[5], company_id=row[6], cost=row[3], company_name=row[7]) for row in result]
     else:
         entries = False
@@ -210,15 +213,6 @@ def getUsers(conn):
     result = runSql(query, conn)
 
     users = [dict(user_id=row[1], username=row[0]) for row in result]
-    
-    return users
-    
-
-def getUserEmails(conn):
-    query = """select email, id from users where status='A';"""
-    result = runSql(query, conn)
-
-    users = [dict(email=row[0], id=row[1]) for row in result]
     
     return users
 

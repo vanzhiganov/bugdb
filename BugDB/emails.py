@@ -1,8 +1,5 @@
 import smtplib
 import string
-import sys
-import db
-
 
 HOST = "localhost"
 FROM = "bugdb@iesedev.org"

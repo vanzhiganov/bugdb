@@ -54,3 +54,14 @@ Todo is a list of things I hope to add in the next release and does not really i
 - 02-06-2011 - Added notification everytime a bug is assigned to the user. Notifications cannot be currently disabled.
 - 29-05-2011 - Have added a configurations page which will now let you configure default statuses. And also see the debug messages.
 - 25-03-2011 - First Commit to Git. Also cleaned up the code a little bit.
+
+
+# Database
+
+    export FLASK_APP=BugDB/__init__.py
+    
+    flask db init -d BugDB/Models/migrations
+    
+    flask db revision --autogenerate -d BugDB/Models/migrations
+    
+    flask db upgrade -d BugDB/Models/migrations
