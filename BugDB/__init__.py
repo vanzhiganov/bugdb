@@ -244,7 +244,9 @@ def bug():
             BugBodyModel.bug_update,
             BugBodyModel.updated_at,
             BugBodyModel.updated_by,
+            UsersModel.id.label("user_id"),
             UsersModel.username,
+            UsersModel.email,
         ).filter(
             BugBodyModel.bug_id == bug_id
         ).filter(
@@ -254,7 +256,8 @@ def bug():
         all_status = db.database.session.query(StatusesModel).all()
         all_users = db.database.session.query(UsersModel.id, UsersModel.email, UsersModel.username).all()
 
-        return render_template('bug.html', bugh=bugh, bugb=bugb, all_status=all_status, all_users=all_users)
+        return render_template(
+            'bug.html', bugh=bugh, bugb=bugb, all_status=all_status, all_users=all_users)
 
     else:
         print(request.form)
@@ -324,7 +327,6 @@ def bug():
         debug(changedString)
         # Now updating the header with changes
         # db.updateBugHeader(g.db, bug)
-
 
         bb = BugBodyModel()
         bb.bug_update = changedString + "\n" + request.form['newupdate']
