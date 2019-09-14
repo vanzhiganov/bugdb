@@ -1,4 +1,5 @@
 """BugDB 2019"""
+import validators
 from flask import Flask, request, session, g, redirect, render_template, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import alias
@@ -49,6 +50,10 @@ def login():
         email = request.form['email']
         password = request.form['password']
 
+        if not validators.email(email):
+            flash('Invalid email', 'danger')
+            return render_template('pages/login.html')
+
         debug('Before trying to login with email_id %s' % email)
 
         # username = db.logMeIn(g.db, email, password)
@@ -71,9 +76,9 @@ def login():
             return redirect(url_for('queue'))
         else:
             flash('Login failed. Try again', 'warning')
-            return render_template('login.html')
+            return render_template('pages/login.html')
     else:
-        return render_template('login.html')
+        return render_template('pages/login.html')
 
 
 @app.route('/logout')
@@ -93,17 +98,20 @@ def register():
         email = request.form.get('email')
         password = request.form['password']
 
-        debug('Registering new User: %s' % request.form['email'])
+        if not validators.email(email):
+            flash('Invalid email', 'danger')
+            return render_template('pages/register.html')
+
+        debug('Registering new User: %s' % email)
 
         if not UsersModel.is_exists_email(email):
-            # db.create_user(g.db, request.form['email'], request.form['password'])
             u = UsersModel(email, UsersModel.get_hash(password), username=email)
             db.database.session.add(u)
             db.database.session.commit()
             db.database.session.flush()
 
         return redirect(url_for('login'))
-    return render_template('register.html')
+    return render_template('pages/register.html')
 
 
 @app.route('/queue', methods=['GET', 'POST'])

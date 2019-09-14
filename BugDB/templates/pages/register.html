@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+
+{% block body %}
+    <div class="row">
+        <div class="col">
+            <h3>Register with your Email here</h3>
+            <form action="" name="registerform" method="POST">
+                <div class="form-group">
+                    <label for="InputEmail">Email</label>
+                    <input type="email" name="email" value="" id="InputEmail" class="form-control" aria-describedby="emailHelp" placeholder="Enter email" />
+                    <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+                </div>
+                <div class="form-group">
+                    <label for="InputPassword">Password</label>
+                    <input type="password" name="password" value="" id="InputPassword" class="form-control" placeholder="Password" />
+                </div>
+                <div class="form-group">
+                    <input type="submit" class="btn btn-success">
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
