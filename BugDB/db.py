@@ -225,16 +225,6 @@ def getStatuses(conn):
 
     return all_status
 
-
-def addStatus(conn, status, description):
-    query = """insert into all_status (status, status_description) values ('"""+status+"""','"""+description+"""');"""
-    result = runSql(query, conn)
-
-
-def deleteStatus(conn, status):
-    query = """delete from all_status where status = '"""+status+"""';"""
-    runSql(query, conn)
-
     
 def getAllQueues(conn):
     all_users = getUsers(conn)
@@ -267,12 +257,3 @@ def getCategories(conn):
     cats = [dict(category_id=row[0], category_name=row[1], category_description = row[2], parent_category_id = row[3], category_owner_id = row[4], parent_category_name = row[5], parent_category_description = row[6], owner_username = row[7], owner_email_id = row[8]) for row in result]
 
     return cats
-
-
-# def createCategory(conn, cat):
-#     query = """
-#     INSERT INTO `categories` (`category_name`, `category_description`, `category_owner_id`, `parent_category_id`)
-#     VALUES ('%(category_name)s', '%(category_description)s', '%(category_owner_id)', '%(parent_category_id)s');
-#     """ % cat
-#
-#     result = runSql(conn, query)
