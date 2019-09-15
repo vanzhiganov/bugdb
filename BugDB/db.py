@@ -218,14 +218,6 @@ def getUsers(conn):
     return users
 
 
-def getStatuses(conn):
-    query = """select status, status_description from all_status order by status;"""
-    result = runSql(query, conn)
-    all_status = [dict(status=row[0], status_description=row[1]) for row in result]
-
-    return all_status
-
-    
 def getAllQueues(conn):
     all_users = getUsers(conn)
     all_queues = []
