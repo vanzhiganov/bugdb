@@ -45,6 +45,10 @@ class UsersModel(database.Model):
             return False
         return True
 
+    @classmethod
+    def get_email_by_id(cls, user_id: int) -> str:
+        return database.session.query(cls.email).filter_by(id=user_id).scalar()
+
 
 # class ProjectsModel():
 #     __tablename__ = "projects"

@@ -303,7 +303,7 @@ def bug():
         #    changedString += "** Changed Description from "+bugh['description']+" to "+ bug['description'] + "\n"
 
         if bugh.assigned_to_user_id != int(bug['assigned_to_user_id']):
-            to = db.getUserEmail(g.db, bug['assigned_to_user_id'])
+            to = UsersModel.get_email_by_id(bug['assigned_to_user_id'])
             debug('Sending email to notify assignation to : ' + to)
             changedString += "** Changed Assigned from " + bugh.assigned_to_user_id + " to " + request.form[
                 'assigned_to_username'] + "\n"
