@@ -1,4 +1,4 @@
-# Bijur BUGDB
+# BugDB
 
 ## Features
 
@@ -17,13 +17,15 @@
 
 ## Requirements
 
-- Flask : http://flask.pocoo.org/
-- Python 2.7 (Am pretty sure it works on 2.5+)
-- MySQL server 5.3+
+- Flask: https://palletsprojects.com/p/flask/
+- Python 3.7
+- PostgreSQL or MySQL server 5.3+
 
 ## Python Module requirements
 
+- SQLAlchemy
 - MySQLdb (http://sourceforge.net/projects/mysql-python/)
+- Psycopg2 (https://github.com/psycopg/psycopg2)
 
 ## How to install and run
 
@@ -47,14 +49,6 @@ Todo is a list of things I hope to add in the next release and does not really i
 1. Categories and subcategories of bugs.
 2. Archive bugs.
 3. Report to show how many bugs were logged, solved in the past one week, month.
-
-
-## ChangeLog
-
-- 02-06-2011 - Added notification everytime a bug is assigned to the user. Notifications cannot be currently disabled.
-- 29-05-2011 - Have added a configurations page which will now let you configure default statuses. And also see the debug messages.
-- 25-03-2011 - First Commit to Git. Also cleaned up the code a little bit.
-
 
 # Database
 
