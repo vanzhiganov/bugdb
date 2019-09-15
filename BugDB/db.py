@@ -21,34 +21,6 @@ def runSql(query, conn):
     result = cursor.fetchall()
     return result
 
-# this loginPage call is just a demo of how to use the above to functions.
-
-
-# def logMeIn(conn, email,  password):
-#     username = re.split('@', email)[0]
-#     query = """
-#     SELECT password FROM users WHERE username='%s' AND password = md5('%s');
-#     """ % (username, password)
-#     result = runSql(query, conn)
-#
-#     if len(result) > 0:
-#         return username
-#     return False
-
-
-def loginPage(conn, email,  password):
-    username = re.split('@', email)[0]
-    query = """
-    SELECT password FROM users WHERE username = '%s' AND password = md5('%s');
-    """ % (username, password)
-    result = runSql(query, conn)
-    
-    if len(result) != 0:
-        return True
-    else:
-        return False
-
-
 # The debug procedures
 
 def m_debug(conn, text):
