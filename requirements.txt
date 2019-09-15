@@ -8,3 +8,4 @@ pymysql
 # common
 validators
 pyjwt
+jsonschema

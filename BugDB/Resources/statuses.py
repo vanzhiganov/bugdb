@@ -1,7 +1,8 @@
-from flask import request
+from flask import request, current_app
 from flask_restful import Resource
 from BugDB.db import database
 from BugDB.Models import StatusesModel
+from BugDB.Decorators import check_schema
 
 
 class StatusesResource(Resource):
@@ -19,16 +20,33 @@ class StatusesResource(Resource):
             "payload": payload
         }, 200
 
+    @check_schema({
+        "type": "object",
+        "properties": {
+            "status": {
+                "type": "string",
+                "pattern": "^(a-zA-Z0-9){1,32}$"
+            },
+            "description": {
+                "type": "string"
+            }
+        },
+        "required": [
+            "status",
+            "description"
+        ]
+    })
     def post(self):
         status = StatusesModel()
         status.status = request.json.get('status')
         status.description = request.json.get('description')
 
-        database.session.add(status)
-        database.session.commit()
-        database.session.flush()
-
-        # TODO: add rollback with failed insert
+        try:
+            database.session.add(status)
+            database.session.flush()
+        except Exception as ex:
+            current_app.logger.error(ex)
+            database.session.rollback()
 
         return {
             "payload": {
@@ -44,5 +62,9 @@ class StatusesResource(Resource):
         for i in request.args:
             if i in allowed_args:
                 filters[i] = request.args.get(i)
+
+        if database.session.query(StatusesModel).filter_by(**filters).count() == 0:
+            return {}, 404
+
         StatusesModel.query.filter_by(**filters).delete()
         return {}, 200
