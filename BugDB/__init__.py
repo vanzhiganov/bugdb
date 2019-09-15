@@ -190,7 +190,6 @@ def queue():
                 other_username="All")
 
 
-
 @app.route('/addBug', methods=['GET', 'POST'])
 def addBug():
     if 'username' in session:
