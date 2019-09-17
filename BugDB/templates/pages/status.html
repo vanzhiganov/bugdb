@@ -1,0 +1,50 @@
+{% extends "layouts/main.html" %}
+
+{% block body %}
+    <div class="row">
+        <div class="col">
+            <h3>Bug Status Configuration</h3>
+            <p>Please find all bug statuses here. If you want to modify a status, please delete and recreate them.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <h4>Currently defined status </h4>
+
+            <form name=addStatus method=POST>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Status</th>
+                            <th>Description</th>
+                            <th>Delete</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for d in status %}
+                            <tr>
+                                <td>{{ d['status'] }}</td>
+                                <td>{{ d['status_description'] }}</td>
+                                <td><a href="deleteStatus?status={{d['status']}}" class="btn btn-danger">Delete</a></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td>
+                                <input type=text name=status class="form-control" placeholder="Status">
+                            </td>
+                            <td>
+                                <input type=text name=description size=50 class="form-control" placeholder="Description">
+                            </td>
+                            <td>
+                            <input type=submit value="Add Status"  class="btn btn-success">
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </form>
+        </div>
+    </div>
+{% endblock %}

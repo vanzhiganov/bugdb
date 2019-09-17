@@ -34,14 +34,11 @@ def after_request(response):
     return response
 
 
-# Now the application procedures.
-
-
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/')
 def index():
     if 'username' in session:
         return redirect(url_for('queue'))
-    return render_template('index.html')
+    return render_template('pages/index.html')
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -56,29 +53,23 @@ def login():
 
         debug('Before trying to login with email_id %s' % email)
 
-        # username = db.logMeIn(g.db, email, password)
         user = UsersModel.login(email, password)
 
-        if user:
-            debug('Login successful for email_id : ' + email)
-
-            # user = db.getUser(g.db, username)
-
-            if user:
-                session['id'] = user.id
-                session['username'] = str(user.username)
-                session['email'] = user.email
-                debug('user found and session populated with : ' + user.email)
-            else:
-                error = "User population failed"
-                return redirect(url_for('login', error=error))
-
-            return redirect(url_for('queue'))
-        else:
+        if not user:
             flash('Login failed. Try again', 'warning')
             return render_template('pages/login.html')
-    else:
-        return render_template('pages/login.html')
+
+        debug('Login successful for email_id : ' + email)
+
+        # user = db.getUser(g.db, username)
+
+        session['id'] = user.id
+        session['username'] = str(user.username)
+        session['email'] = user.email
+        debug('user found and session populated with : ' + user.email)
+
+        return redirect(url_for('queue'))
+    return render_template('pages/login.html')
 
 
 @app.route('/logout')
@@ -96,7 +87,7 @@ def register():
     if request.method == 'POST':
         # TODO: validate email
         email = request.form.get('email')
-        password = request.form['password']
+        password = request.form.get('password')
 
         if not validators.email(email):
             flash('Invalid email', 'danger')
@@ -119,14 +110,12 @@ def queue():
     if 'username' not in session:
         return render_template('login.html', error='Login first')
 
-    users = db.database.session.query(
-        UsersModel.id, UsersModel.email, UsersModel.username
-    ).all()
+    users = db.database.session.query(UsersModel.id, UsersModel.email, UsersModel.username).all()
 
     if request.method != 'POST':
         debug('Getting bugList for user : ' + session['username'])
 
-        bugList = db.database.session.query(
+        bug_list = db.database.session.query(
             BugHeaderModel.id,
             BugHeaderModel.title,
             BugHeaderModel.priority,
@@ -141,12 +130,12 @@ def queue():
             UsersModel.id == session['id']
         ).all()
 
-        for o in bugList:
+        for o in bug_list:
             print(dir(o))
 
         return render_template(
-            'queue.html',
-            bugs=bugList,
+            'pages/queue.html',
+            bugs=bug_list,
             other_username=session['username'],
             users=users,
             queue_user=session['username'])
@@ -156,7 +145,7 @@ def queue():
             # debug('Getting bugList for user : ' + request.form['other_user_id'])
             # bugList = db.getBugList(g.db, request.form['other_username'])
 
-            bugList = db.database.session.query(
+            bug_list = db.database.session.query(
                 BugHeaderModel.id,
                 BugHeaderModel.title,
                 BugHeaderModel.priority,
@@ -172,8 +161,8 @@ def queue():
             ).all()
 
             return render_template(
-                'queue.html',
-                bugs=bugList,
+                'pages/queue.html',
+                bugs=bug_list,
                 other_user_id=request.form['other_user_id'],
                 users=users,
                 queue_user=request.form['other_user_id'])
@@ -184,7 +173,7 @@ def queue():
             # create an list of list of users
             all_queues = db.getAllQueues(g.db)
             return render_template(
-                'all_queues.html',
+                'pages/all_queues.html',
                 all_queues=all_queues,
                 users=users,
                 other_username="All")
@@ -192,47 +181,45 @@ def queue():
 
 @app.route('/addBug', methods=['GET', 'POST'])
 def addBug():
-    if 'username' in session:
-        if request.method != 'POST':
-            return render_template('createbug.html')
+    if 'username' not in session:
+        return render_template('pages/login.html', error='Login first')
+
+    if request.method == 'POST':
+        debug('Creating the bug dictionary for the username : ' + session['username'])
+
+        # user = db.getUser(g.db, session['username'])
+
+        user = db.database.session.query(
+            UsersModel.id, UsersModel.email, UsersModel.username
+        ).filter_by(id=session['id']).first()
+
+        print(user)
+
+        if user:
+
+            user_id = user.id
+
+            debug('Building dictionary before creating bug for user_id : ' + str(user_id))
+
+            debug('Calling db.createBug2 for bug ' + request.form['title'])
+
+            bug = BugHeaderModel()
+            bug.title = request.form['title']
+            bug.customer = request.form['customer']
+            bug.assigned_to_user_id = user.id
+            bug.description = request.form['description']
+            bug.priority = request.form['priority']
+            bug.status = "OPEN"
+
+            db.database.session.add(bug)
+            db.database.session.commit()
+            db.database.session.flush()
+
+            debug('Created the above bug')
+            return redirect(url_for('queue'))
         else:
-            debug('Creating the bug dictionary for the username : ' + session['username'])
-
-            # user = db.getUser(g.db, session['username'])
-
-            user = db.database.session.query(
-                UsersModel.id, UsersModel.email, UsersModel.username
-            ).filter_by(id=session['id']).first()
-
-            print(user)
-
-            if user:
-
-                user_id = user.id
-
-                debug('Building dictionary before creating bug for user_id : ' + str(user_id))
-
-                debug('Calling db.createBug2 for bug ' + request.form['title'])
-
-                bug = BugHeaderModel()
-                bug.title = request.form['title']
-                bug.customer = request.form['customer']
-                bug.assigned_to_user_id = user.id
-                bug.description = request.form['description']
-                bug.priority = request.form['priority']
-                bug.status = "OPEN"
-
-                db.database.session.add(bug)
-                db.database.session.commit()
-                db.database.session.flush()
-
-                debug('Created the above bug')
-                return redirect(url_for('queue'))
-            else:
-                return redirect(url_for('queue'))
-
-    else:
-        return render_template('login.html', error='Login first')
+            return redirect(url_for('queue'))
+    return render_template('pages/createbug.html')
 
 
 @app.route('/bug', methods=['GET', 'POST'])
@@ -264,7 +251,7 @@ def bug():
         all_users = db.database.session.query(UsersModel.id, UsersModel.email, UsersModel.username).all()
 
         return render_template(
-            'bug.html', bugh=bugh, bugb=bugb, all_status=all_status, all_users=all_users)
+            'pages/bug.html', bugh=bugh, bugb=bugb, all_status=all_status, all_users=all_users)
 
     else:
         print(request.form)
@@ -347,12 +334,12 @@ def bug():
 
 @app.route('/options')
 def options():
-    return render_template('options.html')
+    return render_template('pages/options.html')
 
 
 @app.route('/categories')
 def categories():
-    return render_template('categories.html')
+    return render_template('pages/categories.html')
 
 
 @app.route('/status', methods=['GET', 'POST'])
@@ -368,7 +355,7 @@ def status():
         db.database.session.flush()
 
     status = db.database.session.query(StatusesModel).all()
-    return render_template('status.html', status=status)
+    return render_template('pages/status.html', status=status)
 
 
 @app.route('/deleteStatus')
@@ -398,7 +385,7 @@ def add():
 @app.route('/debugs')
 def debugs():
     debug_log = db.getDebug(g.db)
-    return render_template('debug.html', debug=debug_log)
+    return render_template('pages/debug.html', debug=debug_log)
 
 
 @app.route('/flushDebug')
